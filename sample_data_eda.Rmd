@@ -27,7 +27,7 @@ summary(sample_breaches)
 
   This data shows that the mean value of each breach is **\$`r format(mean(sample_breaches$total_amount), scientific = FALSE, big.mark = ",")` **. Te minimum value of the breach is **\$`r format(min(sample_breaches$total_amount), scientific = FALSE, big.mark = ",")` **, and he maximum value is **\$`r format(max(sample_breaches$total_amount), scientific = FALSE, big.mark = ",")` **
   
-The 5 sectors which more ocurrence of breach of information are shown in the table below:
+The 5 sectors which more occurrence of breach of information are shown in the table below:
 
 ```{r, echo=FALSE}
 
@@ -39,8 +39,21 @@ kable(head(freq_sector,5), caption = "Ocurrence per secto")
 
 ```
 
-As we can see, the **`r head(freq_sector$sector,1)`** is the leader of breach of information, with **`r head(freq_sector$Occurrence,1)`** occurrence.
-## Including Plots
+As we can see, the **`r head(freq_sector$sector,1)`** is the leader of breach of information, with **`r head(freq_sector$Occurrence,1)`** occurrence.  Now, in the plot below we can see the division between external and internal causes.  
+
+```{r, include=FALS}
+
+sample_breaches <- sample_breaches %>% 
+  mutate(causes_int_ext = str_extract(cause, "[^ -]*"))#creation of column to divide causes in externals and internals
+
+sample_breaches %>% 
+  group_by(causes_int_ext) %>% 
+  count(sort = TRUE, name = "Occurrence") %>% 
+  ggplot(aes(causes_int_ext, Occurrence, fill = causes_int_ext))+
+  geom_col()
+
+```
+
 
 You can also embed plots, for example:
 
