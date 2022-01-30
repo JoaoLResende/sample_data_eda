@@ -1,0 +1,51 @@
+---
+title:  "Code Chalange Tenchi Security"
+author:   "João L M Resende"
+date:   "30 january 2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+library(knitr)
+
+```
+
+# Report for Abin 
+This is a report to show about cyber breach information. 
+```{r load data, include=FALSE}
+sample_breaches <- read.csv("sample_breaches.csv")
+```
+
+## Summary of the Data
+
+```{r sample_breaches, echo=FALSE}
+summary(sample_breaches)
+```
+
+  This data shows that the mean value of each breach is **\$`r format(mean(sample_breaches$total_amount), scientific = FALSE, big.mark = ",")` **. Te minimum value of the breach is **\$`r format(min(sample_breaches$total_amount), scientific = FALSE, big.mark = ",")` **, and he maximum value is **\$`r format(max(sample_breaches$total_amount), scientific = FALSE, big.mark = ",")` **
+  
+The 5 sectors which more ocurrence of breach of information are shown in the table below:
+
+```{r, echo=FALSE}
+
+freq_sector <- sample_breaches %>% 
+  group_by(sector) %>% 
+  count(sort = TRUE, name = "Occurrence")
+
+kable(head(freq_sector,5), caption = "Ocurrence per secto")
+
+```
+
+As we can see, the **`r head(freq_sector$sector,1)`** is the leader of breach of information, with **`r head(freq_sector$Occurrence,1)`** occurrence.
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
