@@ -43,7 +43,7 @@ kable(head(freq_sector,5), caption = "Ocurrence per secto")
 
 As we can see, the **`r head(freq_sector$sector,1)`** is the leader of breach of information, with **`r head(freq_sector$Occurrence,1)`** occurrence.  Now, in the plot below we can see the division between external and internal causes.  
 
-```{r, echo =FALSE,out.width = "300px"}
+```{r, echo =FALSE,warning=FALSE,out.width = "300px"}
 
 sample_breaches <- sample_breaches %>% 
   mutate(causes_int_ext = str_extract(cause, "[^ -]*"))#creation of column to divide causes in externals and internals
@@ -66,10 +66,10 @@ plot_ex_int_cause
 
   As we can see, the majority of breaches are caused from external causes, with almost double of the internal ones.  
   
-  In the next plot we gonna see the top five occurrence, divide in external and internal causes, for this analysis the events without causes are going to be excluded. 
+  In the next plot we gonna see occurrence of breaches, divide in external and internal causes, for this analysis the events without causes are going to be excluded. 
 
-```{r, echo =FALSE, out.width = "300px"}
-sample_breaches %>% 
+```{r, echo =FALSE, warning=FALSE,out.width = "300px"}
+breaches_by_cause <- sample_breaches %>% 
   filter(!is.na(cause)) %>% 
   group_by(causes_int_ext) %>% 
   count(cause) %>% 
@@ -88,22 +88,44 @@ sample_breaches %>%
         y = "Occurrence",
         fill = "")
 
-
+breaches_by_cause
 ```
   
  As we expected, the variety of external causes is bigger, as seen in the previous plot. Another fact to be in mind is that in both groups external and internal, the difference between the biggest reason for breaches and the smallest is approximately 100.
  
- In the next analysis we can see the distribution of affected_count, that is, how the count of data records involved in the breach is distributed.
+ In the next analysis we can see the distribution of affected_count, that is, how the count of data records involved in the breach are distributed.
  
-```{r}
-sample_breaches %>%
-  ggplot(aes(total_amount, sector))+
+```{r, echo=FALSE, warning=FALSE, out.width = "300px"}
+hist_count <- sample_breaches %>%
+  ggplot(aes(affected_count))+
+  geom_histogram(bins = 15)+
+  scale_x_log10()+
+  labs( title = "Distribution of number of breaches",
+        subtitle = "Scale x in log10",
+        x = "Count",
+        y = "Sector",
+        fill = "")+
+  geom_vline(aes(xintercept = mean(affected_count)), linetype = 'longdash', col = 'red')
+
+hist_count
+```
+  
+Because of the big difference between the number, we choose to use a logarithmic scale (log10). That is, for each same size distance, the value of x increases by 10 times. As we can see in the plot, the distribution of the number of data records involved in the breaches is concentrated at the begging of the plot, that is, the majority of the number of records is smaller tham the mean value, represented by the red dashed line. 
+
+ 
+```{r,echo=FALSE,warning=FALSE,out.width = "300px"}
+boxplot_count_sector <- sample_breaches %>%
+  ggplot(aes(affected_count, sector))+
   geom_boxplot()+
-  labs( title = "Number of breaches",
+  scale_x_log10()+
+  labs( title = "Distribution of number of breaches",
         subtitle = "",
-        x = "Causes",
-        y = "Occurrence",
+        x = "Count",
+        y = "Sector",
         fill = "")
+
+boxplot_count_sector
+
 ```
  
-
+As we can see, the vast majority of occurrences are less tham 10000. Im some sectors are
