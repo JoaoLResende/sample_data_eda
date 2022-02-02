@@ -14,7 +14,7 @@ library(here)
 library(knitr)
 library(scales) 
 library(tidymodels)
-
+library(plotly)
 ```
 
 # Report for Abin 
@@ -176,7 +176,7 @@ boxplot_count_sector <- sample_breaches %>%
 boxplot_count_sector
 
 ```
-```{r, include=FALSE}
+```{r, include=FALSE,warning=FALSE,out.width = "300px"}
 boxplot_total_amount_cause <- sample_breaches %>%
   ggplot(aes(total_amount, cause, fill = cause))+
   geom_boxplot(show.legend = FALSE, alpha=0.7)+
@@ -190,7 +190,7 @@ boxplot_total_amount_cause <- sample_breaches %>%
 boxplot_total_amount_cause
 ```
 
-```{r}
+```{r, echo=FALSE,warning=FALSE,out.width = "300px"}
 boxplot_total_amount_cause <- sample_breaches %>%
   mutate(values = case_when(total_amount > 50000000 ~ "More Than 50,000,000",
                             TRUE ~ "Less Than 50,000,000")) %>% 
@@ -208,7 +208,6 @@ boxplot_total_amount_cause
 ```
 
 
-
 ```{r, include=FALSE}
 
 sample_breaches<- sample_breaches%>% 
@@ -223,7 +222,6 @@ prop_sector_cause <- sample_breaches %>%
   count(cause) %>% 
   mutate(prop = n/sum(n)) %>% 
   select(-3)  
-  # pivot_wider(names_from = cause, values_from = prop)
 
 mean_affected_count<- sample_breaches %>% 
   select(c(2,6,8)) %>% 
@@ -238,11 +236,67 @@ mean_total_amount <- sample_breaches %>%
 klm_prep <- prop_sector_cause %>% 
   left_join(mean_affected_count) %>% 
   left_join(mean_total_amount) %>% 
-  select(-2)
+  ungroup() %>%
+  mutate("sector_cause" = paste0(sector, sep = " (", cause, sep = ")")) %>% 
+  select(-c(1,2)) %>% 
+  filter(!is.na(sector_cause), !is.na(prop), !is.na(mean_affected), !is.na(mean_total))
+```
+
+```{r, include=FALSE}
+sample_kmeans <- kmeans(select(klm_prep, - sector_cause), centers = 3)
 
 ```
 
 ```{r, include=FALSE}
-kmeans(select(klm_prep, - sector), centers = 3)
+broom::tidy(sample_kmeans)
+
+augment(sample_kmeans, klm_prep) %>% 
+  ggplot(aes(mean_affected, mean_total, color = .cluster))+
+  geom_point(alpha = 0.8)+
+  scale_x_log10(labels = comma)+
+  scale_y_log10(labels = comma)
+
+
+  
+```
+
+
+
+```{r, include=FALSE}
+
+kcluster <-
+  tibble(k = 1:9) %>% 
+  mutate(
+    kclust= map(k, ~ kmeans(select(klm_prep, - sector_cause), centers = .x)),
+    tidied = map(kclust, tidy),
+    glanced = map(kclust,glance),
+    augment = map(kclust, augment,klm_prep )
+  )
+
+kcluster %>% 
+  unnest(glanced) %>% 
+  ggplot(aes(k, tot.withinss))+
+  geom_line()+
+  geom_point()
+```
+
+
+
+```{r, include=FALSE}
+sample_kmeans <- kmeans(select(klm_prep, - sector_cause), centers = 4)
+
+```
+
+```{r, echo=FALSE,warning=FALSE,out.width = "300px"}
+broom::tidy(sample_kmeans)
+
+cluste_plot <- augment(sample_kmeans, klm_prep) %>% 
+  ggplot(aes(mean_affected, mean_total, color = .cluster, name = sector_cause))+
+  geom_point(alpha = 0.8)+
+  scale_x_log10(labels = comma)+
+  scale_y_log10(labels = comma)
+
+cluste_plot
+  # ggplotly(cluste_plot)
 ```
 
