@@ -62,6 +62,7 @@ plot_ex_int_cause <- sample_breaches %>%
         fill = "")+
    scale_fill_manual(values = c("#047BAE", "#B1DCE3"),guide="none")
 
+
 plot_ex_int_cause
 
 ```
