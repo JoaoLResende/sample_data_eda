@@ -12,6 +12,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(here)
 library(knitr)
+library(scales) 
+library(tidymodels)
 
 ```
 
@@ -52,7 +54,7 @@ plot_ex_int_cause <- sample_breaches %>%
   group_by(causes_int_ext) %>% 
   count(sort = TRUE, name = "Occurrence") %>% 
   ggplot(aes(causes_int_ext, Occurrence, fill = causes_int_ext))+
-  geom_col()+
+  geom_col(alpha=0.7)+
   labs( title = "Causes of breaches",
         subtitle = "",
         x = "",
@@ -99,7 +101,7 @@ breaches_by_cause
 hist_count <- sample_breaches %>%
   ggplot(aes(affected_count))+
   geom_histogram(bins = 15)+
-  scale_x_log10()+
+  scale_x_log10(labels = comma)+
   labs( title = "Distribution of number of breaches",
         subtitle = "Scale x in log10",
         x = "Count",
@@ -110,14 +112,14 @@ hist_count <- sample_breaches %>%
 hist_count
 ```
   
-Because of the big difference between the number, we choose to use a logarithmic scale (log10). That is, for each same size distance, the value of x increases by 10 times. As we can see in the plot, the distribution of the number of data records involved in the breaches is concentrated at the begging of the plot, that is, the majority of the number of records is smaller tham the mean value, represented by the red dashed line. 
+Because of the big difference between the number, we choose to use a logarithmic scale (log10). That is, for each same size distance, the value of x increases by 10 times. As we can see in the plot, the distribution of the number of data records involved in the breaches is concentrated at the begging of the plot, that is, the majority of the number of records is smaller than the mean value, represented by the red dashed line. 
 
  
 ```{r,echo=FALSE,warning=FALSE,out.width = "300px"}
 boxplot_count_sector <- sample_breaches %>%
-  ggplot(aes(affected_count, sector))+
-  geom_boxplot()+
-  scale_x_log10()+
+  ggplot(aes(affected_count, sector, fill = sector))+
+  geom_boxplot(show.legend = FALSE, alpha=0.7)+
+  scale_x_log10(labels = comma)+
   labs( title = "Distribution of number of breaches",
         subtitle = "",
         x = "Count",
@@ -128,4 +130,72 @@ boxplot_count_sector
 
 ```
  
-As we can see, the vast majority of occurrences are less tham 10000. Im some sectors are
+We can see in the plot above that there is no statistical difference between the means of breaches in each sector. We also can see that the outliers, that is the big numbers that do not follow the distribution are more present in the Retail, Financial and Professional sectors. 
+
+```{r, echo=FALSE, warning=FALSE, out.width = "300px"}
+hist_dollar <- sample_breaches %>%
+  ggplot(aes(total_amount))+
+  geom_histogram(bins = 15)+
+  scale_x_log10(labels = comma)+
+  labs( title = "Distribution of Dollar cost of breaches",
+        subtitle = "Scale x in log10",
+        x = "Dollar Cost",
+        y = "Count",
+        fill = "")+
+  geom_vline(aes(xintercept = mean(total_amount)), linetype = 'longdash', col = 'red')
+
+hist_dollar
+```
+  
+On this distribution, the distribution is similar to the normal distribution, that is, the distribution is symmetric around the center value, however, these values are not the mean, in fact, the vast majority of the values are smaller than the mean, showing that the in the distribution there is a lot of big outliers. The median, or the most typical value is **US\$ `r format(median(sample_breaches$total_amount), scientific = FALSE, big.mark = ",")`**.
+
+Next let's see the relationship between total_amounts and affected_count.
+
+```{r, echo=FALSE, warning=FALSE, out.width = "300px"}
+
+sample_breaches %>% 
+  ggplot(aes(affected_count, total_amount, color = causes_int_ext))+
+  geom_point(alpha = 0.7, show.legend = FALSE)+
+  scale_x_log10(labels = comma)+
+  scale_y_log10(labels = comma)
+
+```
+Since we are on a log10 scale, we cannot affirm the size of the relationship, however, we can say that there is a positive relationship between the number of affected counts and the total cost of the breach.
+
+```{r,echo=FALSE,warning=FALSE,out.width = "300px"}
+boxplot_count_sector <- sample_breaches %>%
+  ggplot(aes(total_amount, sector, fill = sector))+
+  geom_boxplot(show.legend = FALSE, alpha=0.7)+
+  scale_x_log10(labels = comma)+
+  labs( title = "Distribution of number of breaches",
+        subtitle = "",
+        x = "Count",
+        y = "Sector",
+        fill = "")
+
+boxplot_count_sector
+
+```
+```{r}
+boxplot_total_amount_cause <- sample_breaches %>%
+  ggplot(aes(total_amount, cause, fill = cause))+
+  geom_boxplot(show.legend = FALSE, alpha=0.7)+
+  scale_x_log10(labels = comma)+
+  labs( title = "Distribution of number of breaches",
+        subtitle = "",
+        x = "Count",
+        y = "Sector",
+        fill = "")
+
+boxplot_total_amount_cause
+```
+
+```{r}
+sample_breaches %>% 
+  select(c(2,3,6,8)) %>% 
+  mutate(across(is.numeric, ~ as.numeric(scale(.)))) %>% 
+  mutate(sector = replace_na(sector, "Other"),
+         cause = replace_na(cause, "Other"))
+
+```
+
