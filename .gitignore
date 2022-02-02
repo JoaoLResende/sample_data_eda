@@ -4,6 +4,4 @@
 .httr-oauth
 .DS_Store
 *.Rproj
-*.html
 *.png
-*.pdf
