@@ -3,8 +3,8 @@ title: "Code Chalange Tenchi Security"
 author: "João L M Resende"
 date: "30 january 2022"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -45,7 +45,7 @@ kable(head(freq_sector,5), caption = "Ocurrence per secto")
 
 As we can see, the **`r head(freq_sector$sector,1)`** is the leader of breach of information, with **`r head(freq_sector$Occurrence,1)`** occurrence.  Now, in the plot below we can see the division between external and internal causes.  
 
-```{r, echo =FALSE,warning=FALSE,out.width = "300px"}
+```{r, echo =FALSE,warning=FALSE,out.width = "400px"}
 
 sample_breaches <- sample_breaches %>% 
   mutate(causes_int_ext = str_extract(cause, "[^ -]*"))#creation of column to divide causes in externals and internals
@@ -70,7 +70,7 @@ plot_ex_int_cause
   
   In the next plot we gonna see occurrence of breaches, divide in external and internal causes, for this analysis the events without causes are going to be excluded. 
 
-```{r, echo =FALSE, warning=FALSE,out.width = "300px"}
+```{r, echo =FALSE, warning=FALSE,out.width = "400px"}
 breaches_by_cause <- sample_breaches %>% 
   filter(!is.na(cause)) %>% 
   group_by(causes_int_ext) %>% 
@@ -97,7 +97,7 @@ breaches_by_cause
  
  In the next analysis we can see the distribution of affected_count, that is, how the count of data records involved in the breach are distributed.
  
-```{r, echo=FALSE, warning=FALSE, out.width = "300px"}
+```{r, echo=FALSE, warning=FALSE, out.width = "400px"}
 hist_count <- sample_breaches %>%
   ggplot(aes(affected_count))+
   geom_histogram(bins = 15)+
@@ -115,7 +115,7 @@ hist_count
 Because of the big difference between the number, we choose to use a logarithmic scale (log10). That is, for each same size distance, the value of x increases by 10 times. As we can see in the plot, the distribution of the number of data records involved in the breaches is concentrated at the begging of the plot, that is, the majority of the number of records is smaller than the mean value, represented by the red dashed line. 
 
  
-```{r,echo=FALSE,warning=FALSE,out.width = "300px"}
+```{r,echo=FALSE,warning=FALSE,out.width = "400px"}
 boxplot_count_sector <- sample_breaches %>%
   ggplot(aes(affected_count, sector, fill = sector))+
   geom_boxplot(show.legend = FALSE, alpha=0.7)+
@@ -132,7 +132,7 @@ boxplot_count_sector
  
 We can see in the plot above that there is no statistical difference between the means of breaches in each sector. We also can see that the outliers, that is the big numbers that do not follow the distribution are more present in the Retail, Financial and Professional sectors. 
 
-```{r, echo=FALSE, warning=FALSE, out.width = "300px"}
+```{r, echo=FALSE, warning=FALSE, out.width = "400px"}
 hist_dollar <- sample_breaches %>%
   ggplot(aes(total_amount))+
   geom_histogram(bins = 15)+
@@ -151,7 +151,7 @@ On this distribution, the distribution is similar to the normal distribution, th
 
 Next let's see the relationship between total_amounts and affected_count.
 
-```{r, echo=FALSE, warning=FALSE, out.width = "300px"}
+```{r, echo=FALSE, warning=FALSE, out.width = "400px"}
 
 sample_breaches %>% 
   ggplot(aes(affected_count, total_amount, color = causes_int_ext))+
@@ -177,7 +177,7 @@ boxplot_count_sector <- sample_breaches %>%
 boxplot_count_sector
 
 ```
-```{r, include=FALSE,warning=FALSE,out.width = "300px"}
+```{r, include=FALSE,warning=FALSE,out.width = "400px"}
 boxplot_total_amount_cause <- sample_breaches %>%
   ggplot(aes(total_amount, cause, fill = cause))+
   geom_boxplot(show.legend = FALSE, alpha=0.7)+
@@ -193,7 +193,7 @@ boxplot_total_amount_cause
   
 Since we have big outliers, next we gonna divide our data into two samples, one with the Cost of Breaches bigger than US\$50,000,000, and the other with the Cost of Breaches smaller than US\$50,000,000.
 
-```{r, echo=FALSE,warning=FALSE,out.width = "300px"}
+```{r, echo=FALSE,warning=FALSE,out.width = "400px"}
 boxplot_total_amount_cause <- sample_breaches %>%
   mutate(values = case_when(total_amount > 50000000 ~ "More Than 50,000,000",
                             TRUE ~ "Less Than 50,000,000")) %>% 
@@ -295,7 +295,7 @@ cluste_plot <- augment(sample_kmeans, klm_prep) %>%
   scale_x_log10(labels = comma)+
   scale_y_log10(labels = comma)
 
-cluste_plot
-  #ggplotly(cluste_plot)
+#cluste_plot
+  ggplotly(cluste_plot)
 ```
 
