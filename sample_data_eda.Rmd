@@ -176,12 +176,12 @@ boxplot_count_sector <- sample_breaches %>%
 boxplot_count_sector
 
 ```
-```{r}
+```{r, include=FALSE}
 boxplot_total_amount_cause <- sample_breaches %>%
   ggplot(aes(total_amount, cause, fill = cause))+
   geom_boxplot(show.legend = FALSE, alpha=0.7)+
   scale_x_log10(labels = comma)+
-  labs( title = "Distribution of number of breaches",
+  labs( title = "Distribution of Cost of breaches",
         subtitle = "",
         x = "Count",
         y = "Sector",
@@ -191,11 +191,58 @@ boxplot_total_amount_cause
 ```
 
 ```{r}
-sample_breaches %>% 
-  select(c(2,3,6,8)) %>% 
-  mutate(across(is.numeric, ~ as.numeric(scale(.)))) %>% 
+boxplot_total_amount_cause <- sample_breaches %>%
+  mutate(values = case_when(total_amount > 50000000 ~ "More Than 50,000,000",
+                            TRUE ~ "Less Than 50,000,000")) %>% 
+  ggplot(aes(total_amount, cause, fill = cause))+
+  geom_boxplot(show.legend = FALSE, alpha=0.7)+
+  scale_x_log10(labels = comma)+
+  labs( title = "Distribution of Cost of breaches",
+        subtitle = "",
+        x = "Count",
+        y = "Sector",
+        fill = "")+
+  facet_wrap(~ values)
+
+boxplot_total_amount_cause
+```
+
+
+
+```{r, include=FALSE}
+
+sample_breaches<- sample_breaches%>% 
   mutate(sector = replace_na(sector, "Other"),
          cause = replace_na(cause, "Other"))
 
+prop_sector_cause <- sample_breaches %>% 
+  select(c(6,8)) %>% 
+  mutate(sector = replace_na(sector, "Other"),
+         cause = replace_na(cause, "Other"))%>%
+  group_by(sector) %>% 
+  count(cause) %>% 
+  mutate(prop = n/sum(n)) %>% 
+  select(-3)  
+  # pivot_wider(names_from = cause, values_from = prop)
+
+mean_affected_count<- sample_breaches %>% 
+  select(c(2,6,8)) %>% 
+  group_by(sector, cause) %>% 
+  summarise(mean_affected = mean(affected_count))
+
+mean_total_amount <- sample_breaches %>% 
+  select(c(3,6,8)) %>% 
+  group_by(sector, cause) %>% 
+  summarise(mean_total = mean(total_amount))
+
+klm_prep <- prop_sector_cause %>% 
+  left_join(mean_affected_count) %>% 
+  left_join(mean_total_amount) %>% 
+  select(-2)
+
+```
+
+```{r, include=FALSE}
+kmeans(select(klm_prep, - sector), centers = 3)
 ```
 
