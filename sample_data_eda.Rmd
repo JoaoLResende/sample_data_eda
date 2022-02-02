@@ -160,9 +160,10 @@ sample_breaches %>%
   scale_y_log10(labels = comma)
 
 ```
+  
 Since we are on a log10 scale, we cannot affirm the size of the relationship, however, we can say that there is a positive relationship between the number of affected counts and the total cost of the breach.
 
-```{r,echo=FALSE,warning=FALSE,out.width = "300px"}
+```{r,include=FALSE,warning=FALSE,out.width = "300px"}
 boxplot_count_sector <- sample_breaches %>%
   ggplot(aes(total_amount, sector, fill = sector))+
   geom_boxplot(show.legend = FALSE, alpha=0.7)+
@@ -189,6 +190,8 @@ boxplot_total_amount_cause <- sample_breaches %>%
 
 boxplot_total_amount_cause
 ```
+  
+Since we have big outliers, next we gonna divide our data into two samples, one with the Cost of Breaches bigger than US\$50,000,000, and the other with the Cost of Breaches smaller than US\$50,000,000.
 
 ```{r, echo=FALSE,warning=FALSE,out.width = "300px"}
 boxplot_total_amount_cause <- sample_breaches %>%
@@ -200,15 +203,17 @@ boxplot_total_amount_cause <- sample_breaches %>%
   labs( title = "Distribution of Cost of breaches",
         subtitle = "",
         x = "Count",
-        y = "Sector",
+        y = "Cause",
         fill = "")+
   facet_wrap(~ values)
 
 boxplot_total_amount_cause
 ```
+  
+We can see, that the distribution is very similar for the Cost of Breaches smaller than US\$50,000,000, however, for the other sample, we can see that the External - Formal Consultant have a significantly greater mean cost of breach than the other Causes. 
 
 
-```{r, include=FALSE}
+```{r, include=FALSE, results = FALSE, warning=FALSE}
 
 sample_breaches<- sample_breaches%>% 
   mutate(sector = replace_na(sector, "Other"),
@@ -242,13 +247,8 @@ klm_prep <- prop_sector_cause %>%
   filter(!is.na(sector_cause), !is.na(prop), !is.na(mean_affected), !is.na(mean_total))
 ```
 
-```{r, include=FALSE}
+```{r, include=FALSE, results = FALSE, warning=FALSE}
 sample_kmeans <- kmeans(select(klm_prep, - sector_cause), centers = 3)
-
-```
-
-```{r, include=FALSE}
-broom::tidy(sample_kmeans)
 
 augment(sample_kmeans, klm_prep) %>% 
   ggplot(aes(mean_affected, mean_total, color = .cluster))+
@@ -261,8 +261,7 @@ augment(sample_kmeans, klm_prep) %>%
 ```
 
 
-
-```{r, include=FALSE}
+```{r, include=FALSE, results = FALSE, warning=FALSE}
 
 kcluster <-
   tibble(k = 1:9) %>% 
@@ -280,15 +279,15 @@ kcluster %>%
   geom_point()
 ```
 
+  The last analysis is the k-means, in the plot below, points thar are in the same klustes, have similarities betweenn than. We cann see that the moijority of breaches of the same sector are together, howesver the cause beeing external or internat does not put the observation togeher, hance this is not a factor to determiny if there are similiarities between than. 
 
-
-```{r, include=FALSE}
+```{r, include=FALSE, results = FALSE, warning=FALSE}
 sample_kmeans <- kmeans(select(klm_prep, - sector_cause), centers = 4)
 
 ```
 
-```{r, echo=FALSE,warning=FALSE,out.width = "300px"}
-broom::tidy(sample_kmeans)
+
+```{r, echo=FALSE,warning=FALSE,out.width = "400px"}
 
 cluste_plot <- augment(sample_kmeans, klm_prep) %>% 
   ggplot(aes(mean_affected, mean_total, color = .cluster, name = sector_cause))+
@@ -297,6 +296,6 @@ cluste_plot <- augment(sample_kmeans, klm_prep) %>%
   scale_y_log10(labels = comma)
 
 cluste_plot
-  # ggplotly(cluste_plot)
+  #ggplotly(cluste_plot)
 ```
 
